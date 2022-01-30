@@ -1,0 +1,121 @@
+def registerPage(request):
+    page = 'register'
+    form = MyUserCreationForm
+
+    if request.method == 'Post':
+        form = MyUserCreationForm(request.post)
+        if form._valid():
+            user = form.save(commit =False)
+            user.username = user.username.lower()
+            user.save()
+            login(request,user )
+            return redirect('home')
+        else:
+            messages.error(request, 'an error occurred while registering')
+    return render(request, 'login_register.html', { 'form':form})
+
+    {% extends 'main.html' %}
+
+
+
+
+{% block content %}
+
+
+{% if page == 'login' %}
+<div>
+    <form method="post" action ="">
+        {% csrf_token %}
+
+
+        <label>username:</label>
+        <input type="text"  name="username" placeholder="enter Username">
+
+        <label>password:</label>
+        <input type="password"  name="password" placeholder="enter password">
+
+        <input type="submit"  value="Login" />
+    </form>
+    <p>havent signup yet?</p>
+    <a href ="{% url 'register' %}">sign up</a>
+</div>
+{% else %}
+<div>
+    <form method="post" action ="">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit"  value="register" />
+    <p>already signup yet?</p>
+    <a href ="{% url 'login' %}">login</a>
+    </form>
+</div>
+{% endif %}
+
+{% endblock content %}
+<a href="/">
+    <h1>POSTNEWS</h1>
+</a>
+
+{% if request.user.is_authenticated %}
+<a href="{% url 'logout' %}">logout</a>
+{% else %}
+<a href="{% url 'login'  %}">login</a>
+{% endif %}
+</div>
+  <div>
+     {% for POST in POST %}
+       <div>
+         <h5>{{ POST.title }}-{{ POST.host }}</h5>
+         <h5>{{ POST.created }} </h5>
+         <a href="">see more</a>
+       </div>
+     {% endfor %}
+  </div>
+
+def LoginPage(request):
+    page ='login'
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+       username = request.POST.get('username')
+       password = request.POST.get('password')
+
+
+       try:
+           user = User.objects.get(username=username)
+       except:
+           messages.error(request, 'User does not exist')
+
+       user = authenticate(request, username= username, password =password)
+
+       if user is not None:
+           login(request,user)
+           return redirect('home')
+       else:
+           messages.error(request, 'Username OR password is not right/does not exist')
+
+
+    context={'page':page}
+    return render(request, 'login_register.html', context)
+
+
+    img {
+        : 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        width: 150px;
+      }
+
+
+      {% for POST in POST %}
+        <div  class="grid-container">
+           <h5>{{ POST.title }}-{{ POST.host }}</h5>
+           <img src="{{ POST.background_image.url }}" style="width:150px" >
+           <div>
+           <h5>{{ POST.created }} </h5>
+           <h5>topic-{{ POST.topic}}</h5>
+           <a href="{% url 'room' %}">see more</a>
+          </div>
+        </div>
+        {% endfor %}

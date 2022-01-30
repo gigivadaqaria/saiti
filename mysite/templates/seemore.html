@@ -1,0 +1,24 @@
+{% extends 'main.html' %}
+
+
+{% block content %}
+<h1>{{ POST.title}}</h1>
+<h3>{{ POST.body }}</h3>
+
+<div>
+    <h5>creator-{{POST.host}}/{{ POST.created }}/<a href="{%  url 'topicpage' %}">topic-</a><a href="{% url 'home'%}?q={{ POST.topic}}">{{ POST.topic}}</a></h5>
+</div>
+
+<h2>comments.....</h2>
+{% if not POST.comments.all %}
+<h5>no comments yet..<a href="{% url 'create-comment' %}">add comment</a></h5>
+{% else %}
+<h5>
+    <a href="{% url 'create-comment' %}">add comment</a>
+</h5>
+    {% for comment in POST.comments.all %}
+       <h3>{{ comment.body }}</h3>
+       <h3>@{{ comment.host}} {{ comment.date_added}}</h3>
+    {% endfor %}
+{% endif %}
+{% endblock content %}

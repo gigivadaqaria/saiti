@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover:not(.active) {
+  background-color: #111;
+}
+
+.active {
+  background-color: #04AA6D;
+}
+</style>
+</head>
+<body>
+
+<ul>
+  <li><form method="GET" action="{% url 'home' %}">
+    <input type="text" name="q" placeholder="search Posts...">
+  </form></li>
+  <li><a href="">profile</a></li>
+  <li><a href="{% url 'home'  %}">HOME</a></li>
+  <li><a href="{% url 'topicpage'  %}">TOPICS</a></li>
+  {% if request.user.is_authenticated %}
+  <li><a href="{% url 'create-edit'  %}">add post</a></li>
+  {% else %}
+  <li><a href="{% url 'login'  %}">add post</a></li>
+  {% endif %}
+  {% if request.user.is_authenticated %}
+  <li><a href="{% url 'logout'  %}">Logout</a></li>
+  {% else %}
+  <li><a href="{% url 'login'  %}">login</a></li>
+  {% endif %}
+  <li style="float:right"><a class="active" href="{% url 'know'  %}">POSTNEWS</a></li>
+</ul>
+
+</body>
+</html>
+

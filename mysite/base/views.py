@@ -1,0 +1,115 @@
+from importlib.resources import contents
+from telnetlib import AUTHENTICATION
+from django.shortcuts import redirect, render, get_object_or_404
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import authenticate, login ,logout
+from django.contrib.auth.decorators import login_required 
+from .models import POST, Topic
+from django.views.generic import ListView, DetailView
+from django.db.models import Q
+from django.http import HttpResponse
+from .forms import UserCreationForm, PostForm,CommentForm
+
+
+
+def LoginPage(request):
+    page ='login'
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+       username = request.POST.get('username')
+       password = request.POST.get('password')
+
+
+       try:
+           user = User.objects.get(username=username)
+       except:
+           messages.error(request, 'User does not exist')
+
+       user = authenticate(request, username= username, password =password)
+
+       if user is not None:
+           login(request,user)
+           return redirect('home')
+       else:
+           messages.error(request, 'Username OR password is not right/does not exist')
+
+
+    context={'page':page}
+    return render(request, 'login_register.html', context)
+
+def logoutUser(request):
+    logout(request)
+    return redirect('home')
+
+def registerPage(request):
+    form = UserCreationForm()
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'An error occurred during registration')
+
+    return render(request, 'login_register.html', {'form': form})
+
+def home(request):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    post = POST.objects.filter(
+        Q(topic__name__icontains=q) |
+        Q(title__icontains=q) |
+        Q(body__icontains=q)
+    )
+    Topics = Topic.objects.all()
+    context = {'POST': post,'Topics':Topics}
+    return render(request, 'home.html', context)
+
+
+def createpost(request):
+    form = PostForm()
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    
+    context= {'form': form}
+    return render(request,'create-edit_post.html',context)
+
+def createcomment(request):
+    form = CommentForm()
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    
+    context= {'form': form}
+    return render(request,'create-comment.html',context)
+
+def knowpage(request):
+    post = POST.objects.all()
+    Topics = Topic.objects.all()
+    post_count = post.count()
+    topic_count = Topics.count()
+    context = {'POST': post ,'post_count': post_count,'Topics':Topics,'topic_count':topic_count}
+    return render(request, 'know.html',context)
+
+
+def topicpage(request):
+    Topics = Topic.objects.all()
+    context = { 'Topics':Topics }
+    return render(request, 'topics.html', context)
+    
+
+def seemore(request, pk: int):
+    return render(request, 'seemore.html', {
+        'POST': get_object_or_404(POST, pk=pk)
+    })
