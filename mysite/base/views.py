@@ -5,11 +5,11 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login ,logout
 from django.contrib.auth.decorators import login_required 
-from .models import POST, Topic
+from .models import POST, Topic, comment
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from django.http import HttpResponse
-from .forms import UserCreationForm, PostForm,CommentForm
+from .forms import UserCreationForm, PostForm,CommentForm,TopicForm
 
 
 
@@ -72,34 +72,83 @@ def home(request):
     return render(request, 'home.html', context)
 
 
-def createpost(request):
-    form = PostForm()
+def updatepost(request,pk):
+    post = POST.objects.get(id=pk)
+    form =PostForm(instance=post)
+    topics = Topic.objects.all()
+   
     if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    
-    context= {'form': form}
-    return render(request,'create-edit_post.html',context)
+        post.title = request.POST.get('title')
+        post.topic = request.POST.get('Topic')
+        post.body = request.POST.get('body')
+        post.background_image = request.POST.get('background_image')
+        post.save()
+        return redirect('home')
+    context = {'form': form, 'topics': topics, 'post':post}
+    return render (request, 'edit-post.html',context)
 
-def createcomment(request):
-    form = CommentForm()
+def createpost(request):
     if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
+        form = PostForm(request.POST, request.FILES, user=request.user)
+
+        if not form.is_valid():
+             return render(request, 'create-post.html', {
+                'form': form
+            })
+        
+        form.save()
+        return redirect('home')
     
-    context= {'form': form}
-    return render(request,'create-comment.html',context)
+    return render(request, 'create-post.html', {
+       'form': PostForm()
+    })
+
+def createtopic(request):
+    if request.method == 'POST':
+        form = TopicForm(request.POST)
+
+        if not form.is_valid():
+             return render(request, 'create-topic.html', {
+                'form': form
+            })
+        
+        form.save()
+        return redirect('home')
+    return render(request, 'create-topic.html', {
+       'form': TopicForm()
+    })
+
+
+
+def createcomment(request,pk):
+    if request.method == 'POST':
+        form = CommentForm(request.POST,user=request.user)
+
+        if not form.is_valid():
+             return render(request, 'create-comment.html', {
+                'form': form
+            })
+        
+        form.save()
+        return redirect('home')
+    
+    return render(request, 'create-comment.html', {
+       'form': CommentForm() ,
+    })
+
+
+
 
 def knowpage(request):
     post = POST.objects.all()
     Topics = Topic.objects.all()
+    users = User.objects.all()
+    comments = comment.objects.all()
+    comment_count = comments.count()
+    user_count = users.count()
     post_count = post.count()
     topic_count = Topics.count()
-    context = {'POST': post ,'post_count': post_count,'Topics':Topics,'topic_count':topic_count}
+    context = {'POST': post ,'comment_count': comment_count, 'user_count':user_count ,'post_count': post_count,'Topics':Topics,'topic_count':topic_count}
     return render(request, 'know.html',context)
 
 
@@ -109,7 +158,17 @@ def topicpage(request):
     return render(request, 'topics.html', context)
     
 
+
 def seemore(request, pk: int):
     return render(request, 'seemore.html', {
         'POST': get_object_or_404(POST, pk=pk)
     })
+
+
+def profile(request,pk ):
+    user = User.objects.get(id=pk)
+    context= {'user' : user}
+    return render(request,'profile.html',context)
+
+def error(request):
+    return render (request, 'error.html')

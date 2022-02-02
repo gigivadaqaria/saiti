@@ -43,12 +43,16 @@ img {
 <div class="home-container">
     {% for POST in POST %}
         <div >
-           <h5>@{{ POST.host }}/{{ POST.title }}</a></h5>
+           <h5><a href="{% url 'profile' user.pk %}">@{{ POST.host }}</a>/{{ POST.title }}</a></h5>
            <img src="{{ POST.background_image.url }}" style="width:150px" >
           <div>
            <h5>{{ POST.created }} </h5>
            <h5><a href="{%  url 'topicpage' %}">topic</a>/<a href="{% url 'home'%}?q={{ POST.topic}}">{{ POST.topic}}</a></h5>
-           <a href="{% url 'seemore' POST.pk %}">see more</a>
+           {% if request.user != POST.host %}
+           <h5><a href="{% url 'seemore' POST.pk %}">see more</a>-<a href="{%url 'error' %}">edit</a></h5>
+           {% else %}
+           <h5><a href="{% url 'seemore' POST.pk %}">see more</a>-<a href="{%url 'edit-post' POST.pk%}">edit</a></h5>
+           {% endif %}
           </div>
         </div>
     {% endfor %}

@@ -16,7 +16,21 @@ def registerPage(request):
 
     {% extends 'main.html' %}
 
+def createpost(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, user=request.user)
 
+        if not form.is_valid():
+             return render(request, 'post-create.html', {
+                'form': form
+            })
+        
+        form.save()
+        return redirect('home')
+    
+    return render(request, 'create-edit_post.html', {
+       'form': PostForm()
+    })
 
 
 {% block content %}

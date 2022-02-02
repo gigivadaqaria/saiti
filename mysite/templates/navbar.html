@@ -42,6 +42,11 @@ li a:hover:not(.active) {
   <li><a href="{% url 'home'  %}">HOME</a></li>
   <li><a href="{% url 'topicpage'  %}">TOPICS</a></li>
   {% if request.user.is_authenticated %}
+  <li><a href="{% url 'create-topic'   %}">add topics</a></li>
+  {% else %}
+  <li><a href="{% url 'login'  %}">add topics</a></li>
+  {% endif %}
+  {% if request.user.is_authenticated %}
   <li><a href="{% url 'create-edit'  %}">add post</a></li>
   {% else %}
   <li><a href="{% url 'login'  %}">add post</a></li>
